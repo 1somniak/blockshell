@@ -27,9 +27,11 @@ def mined_blocks():
     """
         Endpoint to list all mined blocks.
     """
-    f = open("chain.txt", "r")
-    data = json.loads(f.read())
-    f.close()
+    try:
+        with open("chain.txt", "r") as f:
+            data = json.loads(f.read())
+    except:
+        data = []
     return render_template('blocks.html', data=data)
 
 @app.route('/block/<hash>')
@@ -37,12 +39,17 @@ def block(hash):
     """
         Endpoint which shows all the data for given block hash.
     """
-    f = open("chain.txt", "r")
-    data = json.loads(f.read())
-    f.close()
+    try:
+        with open("chain.txt", "r") as f:
+            data = json.loads(f.read())
+    except:
+        data = []
+    
     for eachBlock in data:
         if eachBlock['hash'] == hash:
             return render_template('blockdata.html', data=eachBlock)
+    
+    return "Block not found", 404
 
 # Run flask app
 if __name__ == '__main__':

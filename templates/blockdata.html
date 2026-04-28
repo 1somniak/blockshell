@@ -56,6 +56,40 @@
                 <div class="col-lg-10" style="margin-top:20px;">
                     <h2><span class="badge badge-primary">{{data['hash']}}</span></h2>
                     <br>
+                    
+                    <!-- Check if data contains user information -->
+                    {% if data['data'] is mapping and 'uid-epita' in data['data'] %}
+                    <div class="row">
+                        <div class="col-md-4">
+                            {% if data['data'].get('avatar') %}
+                            <img src="data:image/png;base64,{{ data['data']['avatar'] }}" class="img-fluid" alt="User Avatar" style="max-width:200px; margin-bottom:20px;">
+                            {% endif %}
+                        </div>
+                        <div class="col-md-8">
+                            <table class="table table-dark table-striped">
+                                <tr>
+                                    <td><b>Prénom</b></td>
+                                    <td>{{ data['data'].get('prenom', 'N/A') }}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Nom</b></td>
+                                    <td>{{ data['data'].get('nom', 'N/A') }}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>UID EPITA</b></td>
+                                    <td>{{ data['data'].get('uid-epita', 'N/A') }}</td>
+                                </tr>
+                                <tr>
+                                    <td><b>Email EPITA</b></td>
+                                    <td>{{ data['data'].get('email-epita', 'N/A') }}</td>
+                                </tr>
+                            </table>
+                        </div>
+                    </div>
+                    <br>
+                    {% endif %}
+                    
+                    <h4>Détails du bloc</h4>
                     <table class="table table-dark table-striped">
                         <tr>
                             <td><b>Height</b></td>
@@ -67,7 +101,7 @@
                         </tr>
                         <tr>
                             <td><b>Data</b></td>
-                            <td>{{data['data']}}</td>
+                            <td><pre>{{ data['data']|tojson(indent=2) }}</pre></td>
                         </tr>
                         <tr>
                             <td><b>Hash</b></td>

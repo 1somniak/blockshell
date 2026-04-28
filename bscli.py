@@ -16,12 +16,17 @@ import click
 import urllib
 import json
 from blockchain.chain import Block, Blockchain
+from PIL import Image, ImageDraw
+import random
+import base64
+import io
 
 # ==================================================
 # ===== SUPPORTED COMMANDS LIST IN BLOCKSHELL ======
 # ==================================================
 SUPPORTED_COMMANDS = [
     'dotx',
+    'adduser',
     'allblocks',
     'getblock',
     'help'
@@ -45,7 +50,7 @@ def cli():
 @click.option("--difficulty", default=3, help="Define difficulty level of blockchain.")
 def init(difficulty):
     """Initialize local blockchain"""
-    print """
+    print("""
   ____    _                  _       _____   _              _   _
  |  _ \  | |                | |     / ____| | |            | | | |
  | |_) | | |   ___     ___  | | __ | (___   | |__     ___  | | | |
@@ -57,7 +62,7 @@ def init(difficulty):
  > Type 'help' to see supported commands.
  > Project by Daxeel Soni - https://daxeel.github.io
 
-    """
+    """)
 
     # Set difficulty of blockchain
     coin.difficulty = difficulty
@@ -92,17 +97,77 @@ def dotx(cmd):
     txData = cmd.split("dotx ")[-1]
     if "{" in txData:
         txData = json.loads(txData)
-    print "Doing transaction..."
+    print("Doing transaction...")
     coin.addBlock(Block(data=txData))
+
+def generate_random_avatar():
+    """
+        Method to generate a random avatar image and encode it in base64
+    """
+    width, height = 200, 200
+    image = Image.new('RGB', (width, height), color=(random.randint(0, 255), random.randint(0, 255), random.randint(0, 255)))
+    draw = ImageDraw.Draw(image)
+    
+    # Draw random shapes for variation
+    for _ in range(5):
+        x1 = random.randint(0, width)
+        y1 = random.randint(0, height)
+        x2 = random.randint(0, width)
+        y2 = random.randint(0, height)
+        color = (random.randint(0, 255), random.randint(0, 255), random.randint(0, 255))
+        draw.line([x1, y1, x2, y2], fill=color, width=2)
+    
+    # Draw a circle in the center
+    center_x, center_y = width // 2, height // 2
+    radius = 40
+    draw.ellipse([center_x - radius, center_y - radius, center_x + radius, center_y + radius], 
+                 fill=(random.randint(100, 255), random.randint(100, 255), random.randint(100, 255)))
+    
+    # Encode image to base64
+    buffer = io.BytesIO()
+    image.save(buffer, format='PNG')
+    buffer.seek(0)
+    img_base64 = base64.b64encode(buffer.getvalue()).decode('utf-8')
+    
+    return img_base64
+
+def adduser(cmd):
+    """
+        Method to add a new user to the blockchain with uid-epita, email-epita, nom, prenom and random avatar image
+    """
+    parts = cmd.split(" ")
+    if len(parts) < 5:
+        throwError("Usage: adduser <uid-epita> <email-epita> <nom> <prenom>")
+        return
+    
+    uid_epita = parts[1]
+    email_epita = parts[2]
+    nom = parts[3]
+    prenom = parts[4]
+    
+    # Generate random avatar
+    avatar_base64 = generate_random_avatar()
+    
+    user_data = {
+        "uid-epita": uid_epita,
+        "email-epita": email_epita,
+        "nom": nom,
+        "prenom": prenom,
+        "avatar": avatar_base64
+    }
+    
+    print("Adding user to blockchain...")
+    coin.addBlock(Block(data=user_data))
+    print("User {} {} added successfully!".format(prenom, nom))
 
 def allblocks(cmd):
     """
         Method to list all mined blocks.
     """
-    print ""
+    print("")
     for eachBlock in coin.chain:
-        print eachBlock.hash
-    print ""
+        print(eachBlock.hash)
+    print("")
 
 def getblock(cmd):
     """
@@ -111,21 +176,22 @@ def getblock(cmd):
     blockHash = cmd.split(" ")[-1]
     for eachBlock in coin.chain:
         if eachBlock.hash == blockHash:
-            print ""
-            print eachBlock.__dict__
-            print ""
+            print("")
+            print(eachBlock.__dict__)
+            print("")
 
 def help(cmd):
     """
         Method to display supported commands in Blockshell
     """
-    print "Commands:"
-    print "   dotx <transaction data>    Create new transaction"
-    print "   allblocks                  Fetch all mined blocks in blockchain"
-    print "   getblock <block hash>      Fetch information about particular block"
+    print("Commands:")
+    print("   adduser <uid> <email> <nom> <prenom>  Add a new user with random avatar")
+    print("   dotx <transaction data>               Create new transaction")
+    print("   allblocks                             Fetch all mined blocks in blockchain")
+    print("   getblock <block hash>                 Fetch information about particular block")
 
 def throwError(msg):
     """
         Method to throw an error from Blockshell.
     """
-    print "Error : " + msg
+    print("Error : " + msg)
