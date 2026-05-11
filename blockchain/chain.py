@@ -15,7 +15,10 @@ __maintainer__ = "Daxeel Soni"
 import hashlib
 import datetime
 import json
-from colorama import Fore, Back, Style
+try:
+    from colorama import Fore, Back, Style
+except Exception:
+    Fore = Back = Style = ''
 import time
 import sys
 import os
@@ -40,13 +43,15 @@ class Block:
             Method to calculate hash from metadata
         """
         hashData = str(self.index) + str(self.data) + self.timestamp + self.previousHash + str(self.nonce)
+        if isinstance(hashData, str):
+            hashData = hashData.encode('utf-8')
         return hashlib.sha256(hashData).hexdigest()
 
     def mineBlock(self, difficulty):
         """
             Method for Proof of Work
         """
-        print Back.RED + "\n[Status] Mining block (" + str(self.index) + ") with PoW ..."
+        print(Back.RED + "\n[Status] Mining block (" + str(self.index) + ") with PoW ...")
         startTime = time.time()
 
         while self.hash[:difficulty] != "0"*difficulty:
@@ -54,9 +59,9 @@ class Block:
             self.hash = self.calculateHash()
 
         endTime = time.time()
-        print Back.BLUE + "[ Info ] Time Elapsed : " + str(endTime - startTime) + " seconds."
-        print Back.BLUE + "[ Info ] Mined Hash : " + self.hash
-        print Style.RESET_ALL
+        print(Back.BLUE + "[ Info ] Time Elapsed : " + str(endTime - startTime) + " seconds.")
+        print(Back.BLUE + "[ Info ] Mined Hash : " + self.hash)
+        print(Style.RESET_ALL)
 
 # ==================================================
 # ================ BLOCKCHAIN CLASS ================
@@ -89,12 +94,24 @@ class Blockchain:
         """
             Method to write new mined block to blockchain
         """
-        dataFile = file("chain.txt", "w")
+        def _to_serializable(obj):
+            if isinstance(obj, bytes):
+                try:
+                    return obj.decode('utf-8')
+                except Exception:
+                    return obj.decode('latin-1')
+            if isinstance(obj, dict):
+                return dict((k, _to_serializable(v)) for k, v in obj.items())
+            if isinstance(obj, list):
+                return [_to_serializable(v) for v in obj]
+            return obj
+
         chainData = []
         for eachBlock in self.chain:
-            chainData.append(eachBlock.__dict__)
-        dataFile.write(json.dumps(chainData, indent=4))
-        dataFile.close()
+            chainData.append(_to_serializable(eachBlock.__dict__))
+
+        with open("chain.txt", "w", encoding='utf-8') as dataFile:
+            dataFile.write(json.dumps(chainData, indent=4))
 
     def loadFromFile(self, filename="chain.txt"):
         """

@@ -35,7 +35,7 @@ def make_person_record(name, idx):
 
     uid = 'uid-epita-%03d' % (idx,)
     email = '%s.%s@epita.fr' % (first, last)
-    image_b64 = base64.b64encode(os.urandom(128))
+    image_b64 = base64.b64encode(os.urandom(128)).decode('ascii')
     return {
         'uid-epita': uid,
         'email-epita': email,
