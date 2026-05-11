@@ -24,6 +24,8 @@ SUPPORTED_COMMANDS = [
     'dotx',
     'allblocks',
     'getblock',
+    'loadchain',
+    'swap23_24',
     'help'
 ]
 
@@ -94,6 +96,24 @@ def dotx(cmd):
         txData = json.loads(txData)
     print "Doing transaction..."
     coin.addBlock(Block(data=txData))
+
+def loadchain(cmd):
+    """
+        Load chain from chain.txt into memory
+    """
+    coin.loadFromFile()
+    print('Loaded chain from chain.txt. Length: %d' % len(coin.chain))
+
+def swap23_24(cmd):
+    """
+        Swap the data fields of block 23 and 24, then re-mine chain
+    """
+    try:
+        coin.loadFromFile()
+        coin.swapBlocks(23, 24)
+        print('Swapped blocks 23 and 24 and updated chain.txt')
+    except Exception as e:
+        print('Error: %s' % str(e))
 
 def allblocks(cmd):
     """

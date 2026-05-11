@@ -67,7 +67,23 @@
                         </tr>
                         <tr>
                             <td><b>Data</b></td>
-                            <td>{{data['data']}}</td>
+                            <td>
+                                {% if data['data'] is mapping %}
+                                    <ul>
+                                        <li><b>UID:</b> {{ data['data'].get('uid-epita', '') }}</li>
+                                        <li><b>Email:</b> {{ data['data'].get('email-epita', '') }}</li>
+                                        <li><b>Nom:</b> {{ data['data'].get('nom', '') }}</li>
+                                        <li><b>Prénom:</b> {{ data['data'].get('prenom', '') }}</li>
+                                        {% if data['data'].get('image') %}
+                                        <li><b>Image:</b><br>
+                                            <img src="data:image/png;base64,{{ data['data'].get('image') }}" style="max-width:200px;" />
+                                        </li>
+                                        {% endif %}
+                                    </ul>
+                                {% else %}
+                                    {{ data['data'] }}
+                                {% endif %}
+                            </td>
                         </tr>
                         <tr>
                             <td><b>Hash</b></td>
